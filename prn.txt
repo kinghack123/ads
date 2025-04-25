@@ -1,0 +1,1059 @@
+Assignment no 1:
+
+#include <iostream>
+#include <string>
+using namespace std;
+
+// Node structure representing each dictionary entry
+struct Node
+{
+    string key;   // Word or name
+    string value; // Meaning or type
+    Node *left;   // Left child in BST
+    Node *right;  // Right child in BST
+
+    // Constructor to initialize node
+    Node(string key, string value)
+    {
+        this->key = key;
+        this->value = value;
+        this->left = nullptr;
+        this->right = nullptr;
+    }
+};
+
+// Dictionary class implementing BST
+class Dictionary
+{
+    Node *root;
+
+public:
+    // Constructor to initialize empty dictionary
+    Dictionary()
+    {
+        root = nullptr;
+    }
+
+    // Insert a new key-value pair into BST
+    void insert(string key, string value)
+    {
+        Node *newNode = new Node(key, value);
+        if (!root)
+        {
+            root = newNode;
+            return;
+        }
+
+        Node *temp = root;
+        Node *parent = nullptr;
+        while (temp)
+        {
+            parent = temp;
+            if (key < temp->key)
+            {
+                temp = temp->left;
+            }
+            else if (key > temp->key)
+            {
+                temp = temp->right;
+            }
+            else
+            {
+                cout << "Duplicate Entry\n";
+                return; // Key already exists
+            }
+        }
+        // Attach new node to the appropriate parent
+        if (key < parent->key)
+            parent->left = newNode;
+        else
+            parent->right = newNode;
+    }
+
+    // Display dictionary using in-order traversal (sorted order)
+    void displayInOrder()
+    {
+        if (!root)
+        {
+            cout << "Tree is empty\n";
+            return;
+        }
+        inOrderTraversal(root);
+    }
+
+    // Helper: Recursive in-order traversal
+    void inOrderTraversal(Node *node)
+    {
+        if (!node)
+            return;
+        inOrderTraversal(node->left);
+        cout << node->key << ": " << node->value << endl;
+        inOrderTraversal(node->right);
+    }
+
+    // Delete a word (node) from the BST
+    void deleteWord(string key)
+    {
+        root = deleteNode(root, key);
+    }
+
+    // Helper: Delete node and return updated subtree root
+    Node *deleteNode(Node *node, string key)
+    {
+        if (!node)
+            return node;
+
+        // Traverse left or right
+        if (key < node->key)
+        {
+            node->left = deleteNode(node->left, key);
+        }
+        else if (key > node->key)
+        {
+            node->right = deleteNode(node->right, key);
+        }
+        else
+        {
+            // Node with one or no child
+            if (!node->left)
+            {
+                Node *temp = node->right;
+                delete node;
+                return temp;
+            }
+            else if (!node->right)
+            {
+                Node *temp = node->left;
+                delete node;
+                return temp;
+            }
+
+            // Node with two children: Find inorder successor
+            Node *successorParent = node;
+            Node *successor = node->right;
+            while (successor->left)
+            {
+                successorParent = successor;
+                successor = successor->left;
+            }
+
+            // Replace current node's key and value
+            node->key = successor->key;
+            node->value = successor->value;
+
+            // Remove successor node
+            if (successorParent->left == successor)
+                successorParent->left = successor->right;
+            else
+                successorParent->right = successor->right;
+
+            delete successor;
+        }
+        return node;
+    }
+
+    // Search for a key and return pointer to node (or nullptr if not found)
+    Node *search(string key)
+    {
+        Node *temp = root;
+        while (temp)
+        {
+            if (temp->key == key)
+                return temp;
+            else if (key < temp->key)
+                temp = temp->left;
+            else
+                temp = temp->right;
+        }
+        return nullptr;
+    }
+
+    // Mirror the BST by swapping left and right subtrees
+    void mirror()
+    {
+        mirrorTree(root);
+        cout << "Tree has been mirrored.\n";
+    }
+
+    // Helper: Recursive mirror logic
+    void mirrorTree(Node *node)
+    {
+        if (!node)
+            return;
+        swap(node->left, node->right);
+        mirrorTree(node->left);
+        mirrorTree(node->right);
+    }
+
+    // Copy the entire BST into a new Dictionary
+    Dictionary copy()
+    {
+        Dictionary newDict;
+        newDict.root = copyTree(root);
+        cout << "Tree has been copied.\n";
+        return newDict;
+    }
+
+    // Helper: Recursively copy tree nodes
+    Node *copyTree(Node *node)
+    {
+        if (!node)
+            return nullptr;
+        Node *newNode = new Node(node->key, node->value);
+        newNode->left = copyTree(node->left);
+        newNode->right = copyTree(node->right);
+        return newNode;
+    }
+
+    // Level order (BFS) traversal using custom queue
+    void displayLevelOrder()
+    {
+        if (!root)
+        {
+            cout << "Tree is empty\n";
+            return;
+        }
+
+        Node *queue[100]; // Simple static queue
+        int front = 0, rear = 0;
+        queue[rear++] = root;
+
+        while (front<  rear)
+        {
+            Node *temp = queue[front++];
+            cout << temp->key << ": " << temp->value << endl;
+            if (temp->left)
+                queue[rear++] = temp->left;
+            if (temp->right)
+                queue[rear++] = temp->right;
+        }
+    }
+};
+
+// Main function: user menu-driven interface
+int main()
+{
+    int n, m, i, j;
+    string key, value;
+    Dictionary dev;
+
+    do
+    {
+        cout << "Choose One of the Options:" << endl
+             << "1. Insert the key(name) and value(type)" << endl
+             << "2. Display Using Inorder Traversal" << endl
+             << "3. Delete a Node" << endl
+             << "4. Search for an Element using Key" << endl
+             << "5. Mirror the Tree" << endl
+             << "6. Copy the Tree" << endl
+             << "7. Display Using Level Order Traversal" << endl;
+        cin >> n;
+
+        switch (n)
+        {
+        case 1:
+            cout << "Enter number of entries: ";
+            cin >> m;
+            for (i = 0; i < m; i++)
+            {
+                cout << "Enter key: ";
+                cin >> key;
+                cout << "Enter value(type): ";
+                cin >> value;
+                dev.insert(key, value);
+            }
+            break;
+
+        case 2:
+            dev.displayInOrder();
+            break;
+
+        case 3:
+            cout << "Enter the key of the node to be deleted: ";
+            cin >> key;
+            dev.deleteWord(key);
+            break;
+
+        case 4:
+            cout << "Enter the key of the node to be searched: ";
+            cin >> key;
+            if (Node *result = dev.search(key))
+                cout << "Key found: " << result->key << " -> " << result->value << endl;
+            else
+                cout << "Key not found\n";
+            break;
+
+        case 5:
+            dev.mirror();
+            break;
+
+        case 6:
+        {
+            Dictionary copiedTree = dev.copy();
+            cout << "Copied tree displayed using in-order traversal:\n";
+            copiedTree.displayInOrder();
+            break;
+        }
+
+        case 7:
+            dev.displayLevelOrder();
+            break;
+
+        default:
+            cout << "Invalid Option\n";
+            break;
+        }
+
+        cout << "Continue? (1 for Yes / 0 for No): ";
+        cin >> j;
+    } while (j == 1);
+
+    return 0;
+}
+
+
+
+
+
+assignment 2:
+
+#include <iostream>
+using namespace std;
+
+// Node structure for AVL Tree
+struct Node
+{
+    int player_id;
+    int score;
+    int height;
+    Node *left;
+    Node *right;
+    Node(int id, int sc) : player_id(id), score(sc), height(1), left(nullptr), right(nullptr) {}
+};
+
+// AVL Tree Class
+class AVLTree
+{
+private:
+    Node *root;
+
+    // Get height of node
+    int getHeight(Node *node)
+    {
+        return node ? node->height : 0;
+    }
+
+    // Get balance factor
+    int getBalanceFactor(Node *node)
+    {
+        return node ? getHeight(node->left) - getHeight(node->right) : 0;
+    }
+
+    // Right Rotation
+    Node *rotateRight(Node *y)
+    {
+        Node *x = y->left;
+        Node *T2 = x->right;
+        x->right = y;
+        y->left = T2;
+        y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
+        x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
+        return x;
+    }
+
+    // Left Rotation
+    Node *rotateLeft(Node *x)
+    {
+        Node *y = x->right;
+        Node *T2 = y->left;
+        y->left = x;
+        x->right = T2;
+        x->height = max(getHeight(x->left), getHeight(x->right)) + 1;
+        y->height = max(getHeight(y->left), getHeight(y->right)) + 1;
+        return y;
+    }
+
+    // Insert node into AVL Tree
+    Node *insert(Node *node, int player_id, int score)
+    {
+        if (!node)
+            return new Node(player_id, score);
+
+        if (player_id < node->player_id)
+            node->left = insert(node->left, player_id, score);
+        else if (player_id > node->player_id)
+            node->right = insert(node->right, player_id, score);
+        else
+        {
+            cout << "Player ID " << player_id << " already exists.\n";
+            return node;
+        }
+
+        // Update height
+        node->height = max(getHeight(node->left), getHeight(node->right)) + 1;
+
+        // Balance the node
+        int balance = getBalanceFactor(node);
+
+        // Perform rotations if unbalanced
+        if (balance > 1 && player_id < node->left->player_id)
+            return rotateRight(node);
+        if (balance < -1 && player_id > node->right->player_id)
+            return rotateLeft(node);
+        if (balance > 1 && player_id > node->left->player_id)
+        {
+            node->left = rotateLeft(node->left);
+            return rotateRight(node);
+        }
+        if (balance < -1 && player_id < node->right->player_id)
+        {
+            node->right = rotateRight(node->right);
+            return rotateLeft(node);
+        }
+
+        return node;
+    }
+
+    // Find minimum value node in subtree
+    Node *findMin(Node *node)
+    {
+        while (node->left)
+            node = node->left;
+        return node;
+    }
+
+    // Remove node by player_id
+    Node *remove(Node *node, int player_id)
+    {
+        if (!node)
+            return nullptr;
+
+        if (player_id < node->player_id)
+            node->left = remove(node->left, player_id);
+        else if (player_id > node->player_id)
+            node->right = remove(node->right, player_id);
+        else
+        {
+            // Node with one child or no child
+
+            if (!node->left)
+            {
+                Node *temp = node->right;
+                delete node;
+                return temp;
+            }
+            else if (!node->right)
+            {
+                Node *temp = node->left;
+                delete node;
+                return temp;
+            }
+
+            // Node with two children: get inorder successor
+            Node *temp = findMin(node->right);
+            node->player_id = temp->player_id;
+            node->score = temp->score;
+            node->right = remove(node->right, temp->player_id);
+        }
+
+        if (!node)
+            return nullptr;
+
+        // Update height
+        node->height = max(getHeight(node->left), getHeight(node->right)) + 1;
+
+        // Balance the node
+        int balance = getBalanceFactor(node);
+
+        if (balance > 1 && getBalanceFactor(node->left) >= 0)
+            return rotateRight(node);
+        if (balance > 1 && getBalanceFactor(node->left) < 0)
+        {
+            node->left = rotateLeft(node->left);
+            return rotateRight(node);
+        }
+        if (balance < -1 && getBalanceFactor(node->right) <= 0)
+            return rotateLeft(node);
+        if (balance < -1 && getBalanceFactor(node->right) > 0)
+        {
+            node->right = rotateRight(node->right);
+            return rotateLeft(node);
+        }
+
+        return node;
+    }
+
+    // Inorder traversal to display leaderboard
+    void inorder(Node *node)
+    {
+        if (node)
+        {
+            inorder(node->left);
+            cout << "Player ID: " << node->player_id << ", Score: " << node->score << endl;
+            inorder(node->right);
+        }
+    }
+
+public:
+    AVLTree() : root(nullptr) {}
+
+    void registerPlayers()
+    {
+        int n;
+        cout << "Enter the number of players to register: ";
+        cin >> n;
+        for (int i = 0; i < n; i++)
+        {
+            int player_id, score;
+            cout << "Enter Player ID and Score for player " << (i + 1) << ": ";
+            cin >> player_id >> score;
+            root = insert(root, player_id, score);
+        }
+    }
+
+    void displayLeaderboard()
+    {
+        cout << "Leaderboard (Inorder Traversal - sorted by Player ID):\n";
+        inorder(root);
+    }
+
+    void removePlayer(int player_id)
+    {
+        root = remove(root, player_id);
+    }
+};
+
+// Main driver
+int main()
+{
+    AVLTree game;
+    int choice, player_id;
+    do
+    {
+        cout << "\n1. Register Players\n2. Display Leaderboard\n3. Remove Player\n4. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            game.registerPlayers();
+            break;
+        case 2:
+            game.displayLeaderboard();
+            break;
+        case 3:
+            cout << "Enter Player ID to remove: ";
+            cin >> player_id;
+            game.removePlayer(player_id);
+            break;
+        case 4:
+            cout << "Exiting...\n";
+            break;
+        default:
+            cout << "Invalid choice. Try again.\n";
+        }
+    } while (choice != 4);
+    return 0;
+}
+
+
+assignment 3:
+
+#include <iostream>
+using namespace std;
+
+// Simple Queue implementation using a struct and array
+struct Queue {
+    int front, rear;
+    int arr[100]; // Fixed size queue
+
+    Queue() {
+        front = -1;
+        rear = -1;
+    }
+
+    void enQueue(int val) {
+        if (rear == 99) {
+            cout << "Queue Overflow\n";
+            return;
+        }
+        if (front == -1)
+            front = 0;
+        arr[++rear] = val;
+    }
+
+    int deQueue() {
+        if (front == -1 || front > rear) {
+            cout << "Queue Underflow\n";
+            return -1;
+        }
+        return arr[front++];
+    }
+
+    bool isEmpty() {
+        return (front == -1 || front > rear);
+    }
+};
+
+// Node structure for adjacency list
+struct AdjListNode {
+    int dest;
+    struct AdjListNode* next;
+};
+
+// Adjacency List
+struct AdjList {
+    struct AdjListNode* head;
+};
+
+// Graph using adjacency list
+struct Graph {
+    int V;
+    struct AdjList* total; // Array of adjacency lists
+    int* visited_array;
+
+    Graph(int no_of_vertices) {
+        V = no_of_vertices;
+        total = new AdjList[V]; // Allocate memory dynamically
+        visited_array = new int[V];
+
+        for (int i = 0; i < V; i++) {
+            total[i].head = NULL;
+            visited_array[i] = 0;
+        }
+    }
+
+    ~Graph() {
+        for (int i = 0; i < V; i++) {
+            AdjListNode* temp = total[i].head;
+            while (temp) {
+                AdjListNode* next = temp->next;
+                delete temp;
+                temp = next;
+            }
+        }
+        delete[] total;
+        delete[] visited_array;
+    }
+
+    void addEdge(int src, int dest) {
+        struct AdjListNode* new_node = new AdjListNode;
+        new_node->dest = dest;
+        new_node->next = total[src].head;
+        total[src].head = new_node;
+
+        struct AdjListNode* nn2 = new AdjListNode;
+        nn2->dest = src;
+        nn2->next = total[dest].head;
+        total[dest].head = nn2;
+    }
+
+    void printAdjList() {
+        cout << "\nAdjacency List:\n";
+        for (int i = 0; i < V; i++) {
+            cout << i;
+            AdjListNode* temp = total[i].head;
+            while (temp != NULL) {
+                cout << " -> " << temp->dest;
+                temp = temp->next;
+            }
+            cout << endl;
+        }
+    }
+
+    void bfs(int start) {
+        Queue Q;
+        bool* visited = new bool[V](); // Dynamically allocated visited array
+        Q.enQueue(start);
+        visited[start] = true;
+
+        while (!Q.isEmpty()) {
+            int printVertex = Q.deQueue();
+            cout << printVertex << " ";
+            AdjListNode* temp = total[printVertex].head;
+            while (temp != NULL) {
+                if (!visited[temp->dest]) {
+                    Q.enQueue(temp->dest);
+                    visited[temp->dest] = true;
+                }
+                temp = temp->next;
+            }
+        }
+        cout << endl;
+        delete[] visited; // Free allocated memory
+    }
+
+    void dfs(int v) {
+        cout << v << " ";
+        visited_array[v] = 1;
+        AdjListNode* temp = total[v].head;
+        while (temp != NULL) {
+            if (visited_array[temp->dest] == 0)
+                dfs(temp->dest);
+            temp = temp->next;
+        }
+    }
+};
+
+// Main function
+int main() {
+    cout << "\nGraph representation using adjacency list..\n";
+    Graph g(6);
+
+    cout << "\nAdding edges...\n";
+    g.addEdge(0, 1);
+    g.addEdge(0, 2);
+    g.addEdge(0, 3);
+    g.addEdge(1, 4);
+    g.addEdge(1, 5);
+    
+    g.printAdjList(); // Print adjacency list after adding edges
+
+    cout << "\nBFS Traversal starting from node 1 : \n";
+    g.bfs(1);
+
+    cout << "\nDFS Traversal starting from node 3 : \n";
+    g.dfs(3);
+
+    return 0;
+}
+
+
+Assigment 4: 
+
+// prims
+
+#include <iostream>
+using namespace std;
+
+const int MAX = 10;
+const int INF = 1e9; // Infinite distance
+
+// Struct for the graph
+struct Graph
+{
+    int nodes; // Number of departments
+    int adjMatrix[MAX][MAX]; // Adjacency matrix to store distances
+};
+
+// Struct to represent MST results
+struct MST
+{
+    int parent[MAX];  // Stores MST parent of each node
+    int key[MAX];     // Stores minimum edge weight to each node
+    bool inMST[MAX];  // True if node is included in MST
+};
+
+// Function to initialize the graph
+void initGraph(Graph &g, int n) 
+{
+    g.nodes = n;
+    for (int i = 0; i < n; ++i)
+       {
+           for (int j = 0; j < n; ++j)
+           {
+               g.adjMatrix[i][j] = INF; // No connection initially
+           }
+       }   
+}           
+
+// Function to add an edge (distance between two departments)
+void addEdge(Graph &g, int u, int v, int dist) 
+{
+    g.adjMatrix[u][v] = dist;
+    g.adjMatrix[v][u] = dist; // Since it's an undirected graph
+}
+
+// Function to find the node with the minimum key value
+int minKey(MST &mst, int n)
+{
+    int min = INF, minIndex = -1;
+    for (int v = 0; v < n; v++)
+    {
+        if (!mst.inMST[v] && mst.key[v] < min) 
+        {
+            min = mst.key[v];
+            minIndex = v;
+        }
+    }
+    return minIndex;
+}
+
+// Prim's Algorithm to find MST
+void primMST(Graph &g) 
+{
+    MST mst;
+
+    for (int i = 0; i < g.nodes; i++)
+    {
+        mst.key[i] = INF;
+        mst.inMST[i] = false;
+        mst.parent[i] = -1;
+    }
+
+    // Start from the first node (department 0)
+    mst.key[0] = 0;
+
+    for (int count = 0; count < g.nodes - 1; count++) 
+    {
+        int u = minKey(mst, g.nodes);
+        mst.inMST[u] = true;
+
+        // Update keys and parent for adjacent nodes
+        for (int v = 0; v < g.nodes; v++) 
+        {
+            if (g.adjMatrix[u][v] != INF && !mst.inMST[v] && g.adjMatrix[u][v] < mst.key[v])
+            {
+                mst.parent[v] = u;
+                mst.key[v] = g.adjMatrix[u][v];
+            }
+        }
+    }
+
+    // Print the MST edges and total distance
+    int totalCost = 0;
+    cout << "\nMinimum Spanning Tree (MST) edges:\n\n";
+    for (int i = 1; i < g.nodes; i++)
+    {
+        cout << "Department " << mst.parent[i] << " - Department " << i
+             << " | Distance = " << g.adjMatrix[i][mst.parent[i]] << "\n";
+        totalCost += g.adjMatrix[i][mst.parent[i]];
+    }
+
+    cout << "\nTotal distance of MST = " << totalCost << "\n";
+}
+
+int main()
+{
+    Graph campus;
+
+    int departments = 5; // Example: 5 departments
+    initGraph(campus, departments);
+
+    // Add distances between departments (you can modify these)
+    addEdge(campus, 0, 1, 10); // Dept 0 - Dept 1 = 10
+    addEdge(campus, 0, 2, 20);
+    addEdge(campus, 1, 2, 5);
+    addEdge(campus, 1, 3, 15);
+    addEdge(campus, 2, 3, 30);
+    addEdge(campus, 2, 4, 8);
+    addEdge(campus, 3, 4, 6);
+
+    // Find and display MST
+    primMST(campus);
+
+    return 0;
+}
+
+
+//krushcal
+
+#include <iostream>
+using namespace std;
+
+// Structure to represent an edge
+struct edge {
+    int u, v, w;
+};
+
+// Find function with path compression
+int find(int parent[], int x) {
+    if (parent[x] != x)
+        parent[x] = find(parent, parent[x]);
+    return parent[x];
+}
+
+// Union function
+void unite(int parent[], int x, int y) {
+    parent[find(parent, y)] = find(parent, x);
+}
+
+int main() {
+    int n;
+    cout << "Enter number of departments: ";
+    cin >> n;
+
+    int adj[n][n]; // Adjacency matrix
+    cout << "Enter the distance matrix:\n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> adj[i][j];
+        }
+    }
+
+    edge edges[n * n];
+    int e = 0;
+
+    // Create edge list from adjacency matrix (only lower triangle to avoid duplicates)
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < i; j++) {
+            if (adj[i][j] != 0) {
+                edges[e++] = {i, j, adj[i][j]};
+            }
+        }
+    }
+
+    // Sort edges by weight using bubble sort (can be optimized)
+    for (int i = 0; i < e - 1; i++) {
+        for (int j = i + 1; j < e; j++) {
+            if (edges[i].w > edges[j].w) {
+                swap(edges[i], edges[j]);
+            }
+        }
+    }
+
+    int parent[n];
+    for (int i = 0; i < n; i++) {
+        parent[i] = i;
+    }
+
+    int total = 0, added = 0;
+
+    cout << "\nMST for college departments:\n";
+    for (int i = 0; i < e && added < n - 1; i++) {
+        int a = edges[i].u;
+        int b = edges[i].v;
+        int d = edges[i].w;
+
+        if (find(parent, a) != find(parent, b)) {
+            unite(parent, a, b);
+            cout << "Department " << a << " - Department " << b << " : " << d << " meters\n";
+            total += d;
+            added++;
+        }
+    }
+
+    cout << "\nTotal distance required = " << total << " meters\n";
+
+    return 0;
+}
+
+
+
+assignment 5:
+
+
+#include <iostream>
+#include <climits> // For INT_MAX
+using namespace std;
+
+// Structure to store location names
+struct Location
+{
+    char name[30];  // Fixed-size char array
+};
+
+// Structure for an edge (node and weight)
+struct Edge 
+{
+    int to;
+    int weight;
+    Edge* next;
+};
+
+// Maximum number of locations (can be adjusted)
+const int MAX_LOCATIONS = 5;
+const int INF = INT_MAX;
+
+// Adjacency list for the graph
+Edge* graph[MAX_LOCATIONS];
+
+// Add edge to the adjacency list
+void addEdge(int from, int to, int weight) 
+{
+    Edge* newEdge = new Edge;
+    newEdge->to = to;
+    newEdge->weight = weight;
+    newEdge->next = graph[from];
+    graph[from] = newEdge;
+}
+
+// Dijkstra's Algorithm
+void dijkstra(int start, Location locations[], int n)
+{
+    int dist[MAX_LOCATIONS];
+    bool visited[MAX_LOCATIONS];
+
+    for (int i = 0; i < n; i++)
+    {
+        dist[i] = INF;
+        visited[i] = false;
+    }
+
+    dist[start] = 0;
+
+    for (int count = 0; count < n - 1; count++) 
+    {
+        int minDist = INF, u = -1;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (!visited[i] && dist[i] < minDist) 
+            {
+                minDist = dist[i];
+                u = i;
+            }
+        }
+
+        if (u == -1) break;
+        visited[u] = true;
+
+        Edge* ptr = graph[u];
+        while (ptr != nullptr) 
+        {
+            int v = ptr->to;
+            int w = ptr->weight;
+            if (!visited[v] && dist[u] + w < dist[v])
+            {
+                dist[v] = dist[u] + w;
+            }
+            ptr = ptr->next;
+        }
+    }
+
+    // Output
+    cout << "\nShortest distances from the " << locations[start].name << " are :\n\n";
+    
+    for (int i = 0; i < n; i++)
+    {
+        cout << "To the " << locations[i].name << ": ";
+        if (dist[i] == INF)
+            cout << "Unreachable\n";
+        else
+            cout << dist[i] << " units\n";
+    }
+}
+
+int main() 
+{
+    int n = MAX_LOCATIONS;
+    Location locations[MAX_LOCATIONS] = 
+    {
+        {"Supplier"},
+        {"Warehouse"},
+        {"Distribution Center"},
+        {"Retail Store A"},
+        {"Retail Store B"}
+    };
+    for (int i = 0; i < n; i++)
+    {
+        graph[i] = nullptr;
+    }
+
+    // Add edges
+    addEdge(0, 1, 4);  // Supplier -> Warehouse
+    addEdge(0, 2, 2);  // Supplier -> Distribution Center
+    addEdge(1, 3, 5);  // Warehouse -> Retail Store A
+    addEdge(2, 1, 1);  // Distribution Center -> Warehouse
+    addEdge(2, 3, 8);  // Distribution Center -> Retail Store A
+    addEdge(2, 4, 10); // Distribution Center -> Retail Store B
+    addEdge(3, 4, 2);  // Retail Store A -> Retail Store B
+
+    int start = 0; // Start from Supplier
+    dijkstra(start, locations, n);
+
+    return 0;
+}
+
+
+
